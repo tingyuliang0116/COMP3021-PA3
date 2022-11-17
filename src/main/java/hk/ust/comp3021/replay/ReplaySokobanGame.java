@@ -181,6 +181,7 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                System.out.println("sjkdhf");
             }
         }
     }
@@ -205,33 +206,21 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
         public void run() {
             // TODO: modify this method to implement the requirements.
             do {
-                try {
-                    nextTick+=tick;
-                    sleepTime=nextTick - System.currentTimeMillis();
-                    if(sleepTime>=0){
-                        Thread.sleep(sleepTime);
-                    } else{
-                        Thread.sleep(0);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 final var undoQuotaMessage = state.getUndoQuota().map(it ->
                         String.format(UNDO_QUOTA_TEMPLATE, it)).orElse(UNDO_QUOTA_UNLIMITED);
                 renderingEngine.message(undoQuotaMessage);
                 renderingEngine.render(state);
-                lock.lock();
-                if (firsttime) {
-                    firsttime=false;
-                    firstcondition.signalAll();
+                nextTick += tick;
+                sleepTime = nextTick - System.currentTimeMillis();
+                if( sleepTime >= 0 ) {
+                    try{
+                        Thread.sleep(sleepTime);
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                 }
-                after=false;
-                if (shouldStop() && !after) {
-                    lock.unlock();
-                    break;
-                }
-                lock.unlock();
-            } while (true);
+            } while (!shouldStop());
+
         }
     }
 
@@ -243,18 +232,19 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
     @Override
     public void run() {
         // TODO
-        Thread[] threads = new Thread[inputEngines.size()+1];
+        Thread[] threads = new Thread[inputEngines.size()];
+        Thread render=new Thread(new RenderingEngineRunnable());
+        render.start();
         for (int n = 0; n < inputEngines.size(); ++n) {
             threads[n] = new Thread(new InputEngineRunnable(n, inputEngines.get(n)));
             threads[n].start();
         }
-        Thread render=new Thread(new RenderingEngineRunnable());
-        threads[inputEngines.size()]=render;
-        threads[inputEngines.size()].start();
         try{
-            for (int n = 0; n <= inputEngines.size(); ++n) {
+            for (int n = 0; n < inputEngines.size(); ++n) {
                 threads[n].join();
             }
+            render.join();
+
         }catch (InterruptedException e){
             e.printStackTrace();
         }
