@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Main" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="hk.ust.comp3021.Sokoban" />
+    <module name="Sokoban.main" />
+    <option name="PROGRAM_PARAMETERS" value="1 src/main/resources/map02.map ROUND_ROBIN 100 src/main/resources/actions/actions0.txt src/main/resources/actions/actions1.txt" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="hk.ust.comp3021.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
