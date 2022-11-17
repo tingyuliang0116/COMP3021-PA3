@@ -2,7 +2,7 @@ package hk.ust.comp3021.replay;
 
 
 import hk.ust.comp3021.actions.ActionResult;
-//import hk.ust.comp3021.actions.Exit;
+import hk.ust.comp3021.actions.Exit;
 import hk.ust.comp3021.game.AbstractSokobanGame;
 import hk.ust.comp3021.game.GameState;
 import hk.ust.comp3021.game.InputEngine;
@@ -10,6 +10,9 @@ import hk.ust.comp3021.game.RenderingEngine;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static hk.ust.comp3021.utils.StringResources.*;
 
@@ -103,7 +106,16 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
     }
 
     // TODO: add any method or field you need.
-
+    private int exitInputEngines = 0;
+    public synchronized boolean shouldStop() {
+        return (state.isWin() || exitInputEngines == inputEngines.size());
+    }
+    private final Lock lock = new ReentrantLock();
+    private boolean firsttime=true;
+    private boolean after=false;
+    private static int turn=0;
+    private final Condition firstcondition = lock.newCondition();
+    private final Condition RRCondition = lock.newCondition();
     /**
      * The implementation of the Runnable for each input engine thread.
      * Each input engine should run in a separate thread.
