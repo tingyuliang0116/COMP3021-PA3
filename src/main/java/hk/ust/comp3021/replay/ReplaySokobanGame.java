@@ -205,21 +205,34 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
         public void run() {
             // TODO: modify this method to implement the requirements.
             do {
+                try {
+                    nextTick+=tick;
+                    sleepTime=nextTick - System.currentTimeMillis();
+                    if(sleepTime>=0){
+                        Thread.sleep(sleepTime);
+                    }
+                    else{
+                        Thread.sleep(0);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 final var undoQuotaMessage = state.getUndoQuota().map(it ->
                         String.format(UNDO_QUOTA_TEMPLATE, it)).orElse(UNDO_QUOTA_UNLIMITED);
                 renderingEngine.message(undoQuotaMessage);
                 renderingEngine.render(state);
-                nextTick += tick;
-                sleepTime = nextTick - System.currentTimeMillis();
-                if( sleepTime >= 0 ) {
-                    try{
-                        Thread.sleep(sleepTime);
-                    }catch (InterruptedException e){
-                        e.printStackTrace();
-                    }
+                lock.lock();
+                if (firsttime) {
+                    firsttime=false;
+                    firstcondition.signalAll();
                 }
-            } while (!shouldStop());
-
+                after=false;
+                if (shouldStop() && !after) {
+                    lock.unlock();
+                    break;
+                }
+                lock.unlock();
+            } while (true);
         }
     }
 
