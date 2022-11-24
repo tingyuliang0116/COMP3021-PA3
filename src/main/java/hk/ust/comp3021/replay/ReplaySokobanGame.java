@@ -244,19 +244,18 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
     @Override
     public void run() {
         // TODO
-        Thread[] threads = new Thread[inputEngines.size()];
-        Thread render=new Thread(new RenderingEngineRunnable());
-        render.start();
+        Thread[] threads = new Thread[inputEngines.size()+1];
         for (int n = 0; n < inputEngines.size(); ++n) {
             threads[n] = new Thread(new InputEngineRunnable(n, inputEngines.get(n)));
             threads[n].start();
         }
+        Thread render=new Thread(new RenderingEngineRunnable());
+        threads[inputEngines.size()]=render;
+        threads[inputEngines.size()].start();
         try{
-            for (int n = 0; n < inputEngines.size(); ++n) {
+            for (int n = 0; n <= inputEngines.size(); ++n) {
                 threads[n].join();
             }
-            render.join();
-
         }catch (InterruptedException e){
             e.printStackTrace();
         }
