@@ -115,7 +115,7 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
     private boolean after=false;
     private static int turn=0;
     private final Condition firstcondition = lock.newCondition();
-    private final Condition RRCondition = lock.newCondition();
+    private final Condition rrCondition = lock.newCondition();
     /**
      * The implementation of the Runnable for each input engine thread.
      * Each input engine should run in a separate thread.
@@ -152,13 +152,13 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
                     }
                     if (shouldStop()) {
                         firstcondition.signalAll();
-                        RRCondition.signalAll();
+                        rrCondition.signalAll();
                         lock.unlock();
                         break;
                     }
                     if (mode == Mode.ROUND_ROBIN) {
                         while (turn != index) {
-                            RRCondition.await();
+                            rrCondition.await();
                         }
                     }
                     if (!exit) {
@@ -175,7 +175,7 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
                     }
                     if (mode == Mode.ROUND_ROBIN) {
                         turn=((turn + 1) % inputEngines.size());
-                        RRCondition.signalAll();
+                        rrCondition.signalAll();
                     }
                     lock.unlock();
                 }
@@ -210,8 +210,7 @@ public class ReplaySokobanGame extends AbstractSokobanGame {
                     sleepTime=nextTick - System.currentTimeMillis();
                     if(sleepTime>=0){
                         Thread.sleep(sleepTime);
-                    }
-                    else{
+                    } else{
                         Thread.sleep(0);
                     }
                 } catch (InterruptedException e) {
